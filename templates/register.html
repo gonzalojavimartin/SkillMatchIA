@@ -4,6 +4,12 @@
 
     <h1 class="mt-5">Registrar CV</h1>
     <p class="lead">Pin a footer to the bottom of the viewport in desktop browsers with this custom HTML and CSS. A fixed navbar has been added with <code class="small">padding-top: 60px;</code> on the <code class="small">main &gt; .container</code>.</p>
-
+    <form method="POST" action="/register">
+        <div class="mb-3">
+            <label for="applicant_description" class="form-label">Ingresa la descripci&oacute;n del candidato:</label>
+            <textarea class="form-control" id="applicant_description" name="applicant_description" rows="4"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Registrar candidato</button>
+    </form>
 
 {% endblock %}
