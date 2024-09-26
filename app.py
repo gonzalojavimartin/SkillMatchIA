@@ -10,6 +10,9 @@ app.config['SECRET_KEY'] = '7110c8ae51a4b5af97be6534caef90e4bb9bdcb3380af008f90b
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
+user = User(len(users) + 1, "Gonzalo Martin", "gonzalojavimartin@gmail.com", "123")
+users.append(user)
+
 @login_manager.user_loader
 def load_user(user_id):
     for user in users:
