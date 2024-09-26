@@ -125,10 +125,14 @@
                   </li>
                 </ul>
                 <div class="d-flex" role="search">
-                    <a class="btn btn-outline-warning" href="/logout" type="button">
-                        <i class="bi-box-arrow-right"></i>&nbsp;
-                        Salir
-                    </a>
+                    {% if current_user.is_anonymous %}
+
+                    {% else %}
+                        <a class="btn btn-outline-warning" href="{{ url_for('logout') }}" type="button">
+                            <i class="bi-box-arrow-right"></i>&nbsp;
+                            Salir
+                        </a>
+                    {% endif %}
                 </div>
               </div>
             </div>
@@ -145,7 +149,14 @@
 
         <footer class="footer mt-auto py-3 bg-body-tertiary">
           <div class="container">
-            <span class="text-body-secondary">&copy; UNLaM 2024 | v0.0.1-alpha</span>
+              <div class="row">
+                  <div class="col">
+                      <span class="text-body-secondary">&copy; UNLaM 2024 | v0.0.1-alpha</span>
+                  </div>
+                  <div class="col text-end">
+                      <i class="bi-person-circle"></i>&nbsp;{{ current_user.name }}
+                  </div>
+              </div>
           </div>
         </footer>
 
