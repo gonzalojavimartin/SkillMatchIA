@@ -1,9 +1,14 @@
-from crypt import methods
-from flask import Flask, render_template, redirect, request, url_for
+import json
+
+import spacy
+from flask import Flask, render_template, redirect, request, url_for, jsonify
 from models import *
 from forms import *
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
+import gensim
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '7110c8ae51a4b5af97be6534caef90e4bb9bdcb3380af008f90b23a5d1616bf319bc298105da20fe'
@@ -76,22 +81,79 @@ def register():  # put application's code here
 def applicant_resume(applicant_id):  # put application's code here
     return render_template('applicant-resume.html', applicant_id=applicant_id)
 
+# Función para calcular la similitud entre dos palabras usando GloVe y gensim
+def calcular_similitud(tec_puesto, tec_candidato):
+    similitudes = []
+
+    for tec_p in tec_puesto:
+        max_similitud = 0
+        for tec_c in tec_candidato:
+            try:
+                # Si ambas tecnologías están en el vocabulario de GloVe
+                # Guardamos la máxima similitud encontrada
+                sim = glove_model.similarity(tec_p.lower(), tec_c.lower())
+                max_similitud = max(max_similitud, sim)
+            except KeyError:
+                continue
+        similitudes.append(max_similitud)
+
+    # Calculamos la similitud promedio
+    return np.mean(similitudes) if similitudes else 0
 
 @app.route('/match-applicants', methods=['GET', 'POST'])
 @login_required
 def match_applicants():  # put application's code here
-    if request.method == "GET":
-        return render_template('match-applicants-form.html')
-    if request.method == "POST":
-        # Aplica el modelo para determinar los mejores candidatos
-        skills = ["Java","C#","TypeScript"]
-        return render_template('match-applicants.html', skills=skills)
+    form = MatchingApplicantsForm()
+    if form.validate_on_submit():
+        job_description = form.job_description
+        user_input = job_description.data
+        nlp = spacy.load("model_upgrade_techs")
+        doc = nlp(user_input)
+        skills_required = []
+
+        for ent in doc.ents:
+            if ent.label_ in ["ORG", "TECHNOLOGY", "TECH"]:
+                skills_required.append(ent.text)
+
+        # Obtener candidatos desde la base de datos
+        candidatos = list_candidatos
+
+        # Calcular la similitud
+        resultados = []
+        for candidato in candidatos:
+            similitud = calcular_similitud(skills_required, candidato.skills_tech)
+            resultados.append((candidato.full_name,candidato.email, candidato.skills_tech, similitud))
+
+        # Ordenar resultados por la similitud (de mayor a menor)
+        top_candidatos = sorted(resultados, key=lambda x: x[3], reverse=True)
+
+        # Filtrar solo aquellos con alguna similitud > 0
+        top_candidatos = [res for res in top_candidatos if res[3] > 0]
+        top_candidatos = top_candidatos[:5]
+        top_candidatos_json = [
+            {
+                'full_name': candidato[0],
+                'email': candidato[1],
+                'skills_tech': candidato[2],
+                'similitud': float(candidato[3])
+            }
+            for candidato in top_candidatos
+        ]
+        return render_template('match-applicants.html', skills_required=skills_required,top_candidatos=top_candidatos_json)
+
+    return render_template('match-applicants-form.html', form=form)
 
 @app.route('/')
 @login_required
 def index():  # put application's code here
     return render_template('index.html')
 
+# Cargar el archivo GloVe descargado manualmente
+glove_file = 'static/glove/glove.6B.100d.txt'
+
+print("Cargando el modelo GloVe desde archivo...")
+glove_model = gensim.models.KeyedVectors.load_word2vec_format(glove_file, binary=False, no_header=True)
+print("Modelo GloVe cargado.")
 
 if __name__ == '__main__':
     app.run(debug=True)
