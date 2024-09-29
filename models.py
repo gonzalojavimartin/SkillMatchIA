@@ -1,14 +1,20 @@
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from enum import Enum
 
+class UserRol(Enum):
+    ADMIN = 'admin'
+    APPLICANT = 'applicant'
+    RECRUITER = 'recruitment'
 
 class User(UserMixin):
 
-    def __init__(self, id, name, email, password, is_admin=False):
+    def __init__(self, id, name, email, password, rol, is_admin=False):
         self.id = id
         self.name = name
         self.email = email
         self.password = generate_password_hash(password)
+        self.rol = rol
         self.is_admin = is_admin
 
     def set_password(self, password):
@@ -16,6 +22,12 @@ class User(UserMixin):
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
+
+    def is_applicant(self):
+        return self.rol == UserRol.APPLICANT
+
+    def is_recruiter(self):
+        return self.rol == UserRol.RECRUITER
 
     def __repr__(self):
         return '<User {}>'.format(self.email)
