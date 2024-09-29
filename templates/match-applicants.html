@@ -3,6 +3,10 @@
 {% block content %}
 
     <h1 class="mt-5">Encontrar Candidatos</h1>
-    <h1>Skills: {{ skills }}</h1>
-
+    <h1>Skills: {{ skills_required }}</h1>
+    <ul>
+    {% for candidato in top_candidatos %}
+    	<li>{{ candidato['full_name'] }} {{ candidato['email'] }} {{ candidato['skills_tech'] }} {{ candidato['similitud'] }}</li>
+    {% endfor %}
+    </ul>
 {% endblock %}
