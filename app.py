@@ -14,8 +14,9 @@ app.config['SECRET_KEY'] = '7110c8ae51a4b5af97be6534caef90e4bb9bdcb3380af008f90b
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
-user = User(len(users) + 1, "Gonzalo Martin", "gonzalojavimartin@gmail.com", "123")
-users.append(user)
+users.append(User(len(users) + 1, "SysAdmin", "admin@skillmatchia.com", "123", UserRol.ADMIN))
+users.append(User(len(users) + 1, "Gonzalo Martin", "gonzalojavimartin@gmail.com", "123", UserRol.APPLICANT))
+users.append(User(len(users) + 1, "Empresa Reclutadora", "reclutamiento@empresa.com", "123", UserRol.RECRUITER))
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -33,6 +34,7 @@ def signup():
         name = form.name.data
         email = form.email.data
         password = form.password.data
+        rol = form.rol.data
         # Creamos el usuario y lo guardamos
         user = User(len(users) + 1, name, email, password)
         users.append(user)
@@ -67,7 +69,7 @@ def logout():
 
 @app.route('/register', methods=['GET', 'POST'])
 @login_required
-def register():  # put application's code here
+def register():
     if request.method == 'GET':
         return render_template('register.html')
     if request.method == 'POST':
@@ -77,7 +79,7 @@ def register():  # put application's code here
 
 @app.route('/applicant-resume/<applicant_id>')
 @login_required
-def applicant_resume(applicant_id):  # put application's code here
+def applicant_resume(applicant_id):
     return render_template('applicant-resume.html', applicant_id=applicant_id)
 
 # Función para calcular la similitud entre dos palabras usando GloVe y gensim
@@ -101,7 +103,7 @@ def calcular_similitud(tec_puesto, tec_candidato):
 
 @app.route('/match-applicants', methods=['GET', 'POST'])
 @login_required
-def match_applicants():  # put application's code here
+def match_applicants():
     form = MatchingApplicantsForm()
     if form.validate_on_submit():
         job_description = form.job_description
@@ -144,10 +146,11 @@ def match_applicants():  # put application's code here
 
 @app.route('/')
 @login_required
-def index():  # put application's code here
+def index():
     return render_template('index.html')
 
 # Cargar el archivo GloVe descargado manualmente
+# Para desarrollo local descargar desde https://nlp.stanford.edu/data/glove.6B.zip
 glove_file = 'static/glove/glove.6B.100d.txt'
 
 if  os.path.isfile(glove_file):
