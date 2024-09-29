@@ -161,4 +161,4 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/*
 .DS_STORE
-#static/glove/glove.6B.100d.txt
+static/glove/glove.6B.100d.txt

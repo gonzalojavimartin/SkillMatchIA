@@ -1,5 +1,5 @@
-import json
-
+import os.path
+import gensim.downloader as api
 import spacy
 from flask import Flask, render_template, redirect, request, url_for, jsonify
 from models import *
@@ -7,7 +7,6 @@ from forms import *
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 import gensim
-from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
 app = Flask(__name__)
@@ -151,8 +150,14 @@ def index():  # put application's code here
 # Cargar el archivo GloVe descargado manualmente
 glove_file = 'static/glove/glove.6B.100d.txt'
 
-print("Cargando el modelo GloVe desde archivo...")
-glove_model = gensim.models.KeyedVectors.load_word2vec_format(glove_file, binary=False, no_header=True)
+if  os.path.isfile(glove_file):
+    print("Cargando el modelo GloVe desde archivo...")
+    glove_model = gensim.models.KeyedVectors.load_word2vec_format(glove_file, binary=False, no_header=True)
+else:
+    # Descargar los embeddings de GloVe
+    print("Cargando el modelo GloVe desde gensim.downloader...")
+    glove_model = api.load("glove-wiki-gigaword-100")
+
 print("Modelo GloVe cargado.")
 
 if __name__ == '__main__':
