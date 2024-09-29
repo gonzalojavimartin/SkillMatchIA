@@ -111,18 +111,22 @@
                         Home
                     </a>
                   </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="/match-applicants">
-                        <i class="bi-person-bounding-box"></i>&nbsp;
-                        Match CV
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="/register">
-                        <i class="bi-person-add"></i>&nbsp;
-                        Registrar
-                    </a>
-                  </li>
+                    {% if current_user.is_recruiter() %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/match-applicants">
+                            <i class="bi-person-bounding-box"></i>&nbsp;
+                            Reclutar
+                        </a>
+                      </li>
+                    {% endif %}
+                    {% if current_user.is_applicant() %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/register">
+                            <i class="bi-person-add"></i>&nbsp;
+                            Registrar CV
+                        </a>
+                      </li>
+                    {% endif %}
                 </ul>
                 <div class="d-flex" role="search">
                     {% if current_user.is_anonymous %}
@@ -154,7 +158,7 @@
                       <span class="text-body-secondary">&copy; UNLaM 2024 | v0.0.1-alpha</span>
                   </div>
                   <div class="col text-end">
-                      <i class="bi-person-circle"></i>&nbsp;{{ current_user.name }}
+                      <i class="bi-person-circle"></i>&nbsp;{{ current_user.name }} ({{ current_user.rol }})
                   </div>
               </div>
           </div>

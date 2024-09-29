@@ -14,8 +14,9 @@ app.config['SECRET_KEY'] = '7110c8ae51a4b5af97be6534caef90e4bb9bdcb3380af008f90b
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
-user = User(len(users) + 1, "Gonzalo Martin", "gonzalojavimartin@gmail.com", "123")
-users.append(user)
+users.append(User(len(users) + 1, "SysAdmin", "admin@skillmatchia.com", "123", UserRol.ADMIN))
+users.append(User(len(users) + 1, "Gonzalo Martin", "gonzalojavimartin@gmail.com", "123", UserRol.APPLICANT))
+users.append(User(len(users) + 1, "Empresa Reclutadora", "reclutamiento@empresa.com", "123", UserRol.RECRUITER))
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -33,6 +34,7 @@ def signup():
         name = form.name.data
         email = form.email.data
         password = form.password.data
+        rol = form.rol.data
         # Creamos el usuario y lo guardamos
         user = User(len(users) + 1, name, email, password)
         users.append(user)
