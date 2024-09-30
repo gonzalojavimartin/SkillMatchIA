@@ -2,8 +2,23 @@
 
 {% block content %}
 
-    <h1 class="mt-5">Index</h1>
-    <p class="lead">Pin a footer to the bottom of the viewport in desktop browsers with this custom HTML and CSS. A fixed navbar has been added with <code class="small">padding-top: 60px;</code> on the <code class="small">main &gt; .container</code>.</p>
-
+    <div class="mt-5 p-5 mb-4 bg-body-tertiary rounded-3">
+      <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">Bienvenido, {{ current_user.name }}</h1>
+        <p class="col fs-4">Conéctate con las mejores oportunidades en tecnología, ya seas candidato o empresa. Nuestra plataforma utiliza inteligencia avanzada para hacer el match perfecto entre talento y necesidad. Simplifica la búsqueda y encuentra tu mejor opción en el mundo laboral.</p>
+        {% if current_user.is_recruiter() %}
+            <a class="btn btn-primary btn-lg" href="/match-applicants">
+                <i class="bi-person-bounding-box"></i>&nbsp;
+                Recluta al mejor candidato
+            </a>
+        {% endif %}
+        {% if current_user.is_applicant() %}
+            <a class="btn btn-primary btn-lg" href="/register">
+                <i class="bi-person-add"></i>&nbsp;
+                Registrar CV
+            </a>
+        {% endif %}
+      </div>
+    </div>
 
 {% endblock %}
