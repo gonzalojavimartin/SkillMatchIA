@@ -3,19 +3,31 @@
 {% block content %}
 
     <h1 class="mt-5"><i class="bi-robot"></i> Encontrar Candidatos</h1>
-    <p class="lead">Encuentra al candidato perfecto para tu equipo en cuestión de segundos. Nuestra plataforma analiza habilidades y tecnologías para ofrecerte las mejores coincidencias de forma inteligente. ¡Optimiza tu búsqueda y conecta con talento altamente capacitado hoy mismo!</p>
-    <div class="card mb-3">
-        <div class="card-body">
-            <i>{{ job_description }}</i>
+    <div class="row">
+        <div class="col">
+            <p class="lead">Encuentra al candidato perfecto para tu equipo en cuestión de segundos. Nuestra plataforma analiza habilidades y tecnologías para ofrecerte las mejores coincidencias de forma inteligente. ¡Optimiza tu búsqueda y conecta con talento altamente capacitado hoy mismo!</p>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <i>{{ job_description }}</i>
+                </div>
+            </div>
+            <p class="lead"><b>Skills detectadas para el puesto:</b> {{ skills_required }}</p>
+        </div>
+        <div class="col">
+            <h4>Top de candidatos encontrados:</h4>
+            <div class="list-group">
+                {% for candidato in top_candidatos %}
+                    <a href="mailto:{{ candidato['email'] }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ candidato['full_name'] }}</h5>
+                            <small>{{ candidato['similitud'] }}</small>
+                        </div>
+                        <p class="mb-1"><i class="bi-journal-code"></i> {{ candidato['skills_tech'] }}</p>
+                        <small><i class="bi-evelope"></i> {{ candidato['email'] }}</small>
+                    </a>
+                {% endfor %}
+            </div>
         </div>
     </div>
-    <h4>Skills requeridas para el puesto: {{ skills_required }}</h4>
-    <p class="lead">Top de candidatos encontrados:</p>
-    <ol>
-    {% for candidato in top_candidatos %}
-    	<li>{{ candidato['full_name'] }} {{ candidato['email'] }} {{ candidato['skills_tech'] }} {{ candidato['similitud'] }}</li>
-    {% endfor %}
-    </ol>
-
 
 {% endblock %}
