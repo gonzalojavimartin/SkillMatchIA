@@ -140,7 +140,7 @@ def match_applicants():
             }
             for candidato in top_candidatos
         ]
-        return render_template('match-applicants.html', skills_required=skills_required,top_candidatos=top_candidatos_json)
+        return render_template('match-applicants.html', job_description=user_input, skills_required=skills_required,top_candidatos=top_candidatos_json)
 
     return render_template('match-applicants-form.html', form=form)
 

@@ -2,11 +2,20 @@
 
 {% block content %}
 
-    <h1 class="mt-5">Encontrar Candidatos</h1>
-    <h1>Skills: {{ skills_required }}</h1>
-    <ul>
+    <h1 class="mt-5"><i class="bi-robot"></i> Encontrar Candidatos</h1>
+    <p class="lead">Encuentra al candidato perfecto para tu equipo en cuestión de segundos. Nuestra plataforma analiza habilidades y tecnologías para ofrecerte las mejores coincidencias de forma inteligente. ¡Optimiza tu búsqueda y conecta con talento altamente capacitado hoy mismo!</p>
+    <div class="card mb-3">
+        <div class="card-body">
+            <i>{{ job_description }}</i>
+        </div>
+    </div>
+    <h4>Skills requeridas para el puesto: {{ skills_required }}</h4>
+    <p class="lead">Top de candidatos encontrados:</p>
+    <ol>
     {% for candidato in top_candidatos %}
     	<li>{{ candidato['full_name'] }} {{ candidato['email'] }} {{ candidato['skills_tech'] }} {{ candidato['similitud'] }}</li>
     {% endfor %}
-    </ul>
+    </ol>
+
+
 {% endblock %}
