@@ -16,7 +16,7 @@ class SignupForm(FlaskForm):
     name = StringField('Nombre', validators=[DataRequired(), Length(max=64)])
     password = PasswordField('Password', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    rol = SelectField('Rol',validators=[DataRequired()],choices=[(UserRol.APPLICANT,"Candidato"),(UserRol.APPLICANT,"Reclutador")])
+    rol = SelectField('Rol',validators=[DataRequired()],choices=[(UserRol.APPLICANT.name,"Candidato"),(UserRol.RECRUITER.name,"Reclutador")])
     submit = SubmitField('Registrar')
 
 class MatchingApplicantsForm(FlaskForm):

@@ -34,12 +34,12 @@ def signup():
         name = form.name.data
         email = form.email.data
         password = form.password.data
-        rol = form.rol.data
+        rol = UserRol[form.rol.data]
         # Creamos el usuario y lo guardamos
-        user = User(len(users) + 1, name, email, password)
+        user = User(len(users) + 1, name, email, password, rol)
         users.append(user)
         # Dejamos al usuario logueado
-        login_user(user, remember=True)
+        # login_user(user, remember=True)
         next_page = request.args.get('next', None)
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
