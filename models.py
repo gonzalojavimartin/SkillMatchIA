@@ -1,3 +1,5 @@
+import uuid
+
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from enum import Enum
@@ -32,6 +34,12 @@ class User(UserMixin):
     def __repr__(self):
         return '<User {}>'.format(self.email)
 
+    def get_name(self):
+        return self.name
+
+    def get_email(self):
+        return self.email
+
 users = []
 
 def get_user(email):
@@ -42,9 +50,16 @@ def get_user(email):
 
 class Candidato:
     def __init__(self, full_name, email, skills_tech):
+        self.id = str(uuid.uuid4())
         self.full_name = full_name
         self.email = email
         self.skills_tech = skills_tech
+
+    def __repr__(self):
+        return '<Candidato {} {} {}>'.format(self.full_name, self.email, self.skills_tech)
+
+    def get_id(self):
+        return self.id
 
 data = {
     'full_name': ['Juan Pérez', 'María López', 'Carlos Fernández', 'Ana Gómez', 'Ricardo Martínez',

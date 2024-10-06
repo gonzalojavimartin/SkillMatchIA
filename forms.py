@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField
 from wtforms.fields.choices import SelectField
-from wtforms.fields.simple import TextAreaField
+from wtforms.fields.simple import TextAreaField, FileField
 from wtforms.validators import DataRequired, Email, Length
 from email_validator import validate_email, EmailNotValidError
 from models import UserRol
@@ -21,3 +21,6 @@ class SignupForm(FlaskForm):
 
 class MatchingApplicantsForm(FlaskForm):
     job_description = TextAreaField('job_description', validators=[DataRequired()])
+
+class UploadCurriculumForm(FlaskForm):
+    file_cv = FileField('Curriculum', validators=[DataRequired()])
