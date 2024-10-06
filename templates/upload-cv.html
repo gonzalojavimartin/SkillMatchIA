@@ -6,12 +6,16 @@
     <p class="lead">
     Descubre tu próximo gran desafío profesional con nuestra plataforma inteligente. Analizamos tus habilidades y te conectamos con las mejores oportunidades laborales en tecnología. ¡Haz match con empresas que valoran tu talento y da el siguiente paso en tu carrera!
     </p>
-    <form method="POST" action="/register">
+    <form method="post" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
         <div class="mb-3">
-            <label for="applicant_description" class="form-label">Ingresa la descripci&oacute;n del candidato:</label>
-            <textarea class="form-control" id="applicant_description" name="applicant_description" rows="4"></textarea>
+            {{ form.file_cv.label(class_="form-label") }}
+            {{ form.file_cv(class_="form-control") }}
+            {% for error in form.file_cv.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
         </div>
-        <button type="submit" class="btn btn-primary">Registrar candidato</button>
+        <button type="submit" class="btn btn-primary">Adjuntar CV</button>
     </form>
 
 {% endblock %}
