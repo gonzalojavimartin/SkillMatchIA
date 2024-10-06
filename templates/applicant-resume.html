@@ -1,8 +1,9 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-
     <h1 class="mt-5">Resumen del Candidato / CV</h1>
-    <h1>ID: {{ applicant_id }}</h1>
-
+    <h2>ID: {{ applicant["id"] }}</h2>
+    <h2>Nombre completo: {{ applicant["full_name"] }}</h2>
+    <h2>Email: {{ applicant["email"] }}</h2>
+    <h3>Skills: {{ applicant["skills_tech"] }}</h3>
 {% endblock %}

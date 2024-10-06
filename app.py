@@ -2,12 +2,18 @@ import os.path
 import gensim.downloader as api
 import spacy
 from flask import Flask, render_template, redirect, request, url_for, jsonify
+from werkzeug.utils import secure_filename
+
 from models import *
 from forms import *
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 import gensim
 import numpy as np
+import PyPDF2
+import json
+
+from technologies import get_technologies
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '7110c8ae51a4b5af97be6534caef90e4bb9bdcb3380af008f90b23a5d1616bf319bc298105da20fe'
@@ -17,6 +23,8 @@ login_manager.login_view = "login"
 users.append(User(len(users) + 1, "SysAdmin", "admin@skillmatchia.com", "123", UserRol.ADMIN))
 users.append(User(len(users) + 1, "Gonzalo Martin", "gonzalojavimartin@gmail.com", "123", UserRol.APPLICANT))
 users.append(User(len(users) + 1, "Empresa Reclutadora", "reclutamiento@empresa.com", "123", UserRol.RECRUITER))
+
+TECHNOLOGIES = get_technologies()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -67,39 +75,74 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-@app.route('/register', methods=['GET', 'POST'])
+def extract_text_from_pdf(pdf_path):
+    text = ""
+    with open(pdf_path, 'rb') as pdf_file:
+        reader = PyPDF2.PdfReader(pdf_file)
+        for page_num in range(len(reader.pages)):
+            page = reader.pages[page_num]
+            text += page.extract_text()
+    return text
+
+@app.route('/upload-cv', methods=['GET', 'POST'])
 @login_required
-def register():
-    if request.method == 'GET':
-        return render_template('register.html')
-    if request.method == 'POST':
-        # Registra el CV y vuelve al home
-        applicant_id = 1234
-        return redirect(url_for('applicant_resume',applicant_id=applicant_id))
+def upload_cv():
+    form = UploadCurriculumForm()
+    if form.validate_on_submit():
+        filename = secure_filename(form.file_cv.data.filename)
+        path = 'uploads/' + filename
+        form.file_cv.data.save(path)
+        text_cv = extract_text_from_pdf(path)
+        skills = identify_skills_tech(text_cv)
+        os.remove(path)
+        applicant = Candidato(current_user.get_name(), current_user.email, skills)
+        list_candidatos.append(applicant)
+        applicant_id = applicant.get_id()
+        return redirect(url_for('applicant_resume', applicant_id=applicant_id))
+    else:
+        return render_template('upload-cv.html', form=form)
 
 @app.route('/applicant-resume/<applicant_id>')
 @login_required
 def applicant_resume(applicant_id):
-    return render_template('applicant-resume.html', applicant_id=applicant_id)
+    for applicant in list_candidatos:
+        if applicant_id == applicant.id:
+            return render_template('applicant-resume.html', applicant=applicant)
+
+def extract_technologies(words_list):
+    return [tech for tech in words_list if tech in TECHNOLOGIES]
+
+def identify_skills_tech(text):
+    nlp = spacy.load("model_upgrade_techs")
+    doc = nlp(text)
+    skills = []
+
+    for ent in doc.ents:
+        if ent.label_ in ["ORG", "TECHNOLOGY", "TECH"]:
+            skills.append(ent.text)
+
+    found_technologies = extract_technologies(skills)
+
+    return list(set(found_technologies))
 
 # Función para calcular la similitud entre dos palabras usando GloVe y gensim
-def calcular_similitud(tec_puesto, tec_candidato):
-    similitudes = []
+def similarity(words1, words2):
+    similarities = []
 
-    for tec_p in tec_puesto:
-        max_similitud = 0
-        for tec_c in tec_candidato:
+    for word1 in words1:
+        max_similarity = 0
+        for word2 in words2:
             try:
-                # Si ambas tecnologías están en el vocabulario de GloVe
+                # Si ambas palabras están en el vocabulario de GloVe
                 # Guardamos la máxima similitud encontrada
-                sim = glove_model.similarity(tec_p.lower(), tec_c.lower())
-                max_similitud = max(max_similitud, sim)
+                sim = glove_model.similarity(word1.lower(), word2.lower())
+                max_similarity = max(max_similarity, sim)
             except KeyError:
                 continue
-        similitudes.append(max_similitud)
+        similarities.append(max_similarity)
 
     # Calculamos la similitud promedio
-    return np.mean(similitudes) if similitudes else 0
+    return np.mean(similarities) if similarities else 0
 
 @app.route('/match-applicants', methods=['GET', 'POST'])
 @login_required
@@ -108,39 +151,33 @@ def match_applicants():
     if form.validate_on_submit():
         job_description = form.job_description
         user_input = job_description.data
-        nlp = spacy.load("model_upgrade_techs")
-        doc = nlp(user_input)
-        skills_required = []
-
-        for ent in doc.ents:
-            if ent.label_ in ["ORG", "TECHNOLOGY", "TECH"]:
-                skills_required.append(ent.text)
+        skills_required = identify_skills_tech(user_input)
 
         # Obtener candidatos desde la base de datos
-        candidatos = list_candidatos
+        applicants = list_candidatos
 
         # Calcular la similitud
-        resultados = []
-        for candidato in candidatos:
-            similitud = calcular_similitud(skills_required, candidato.skills_tech)
-            resultados.append((candidato.full_name,candidato.email, candidato.skills_tech, similitud))
+        result = []
+        for applicant in applicants:
+            simil = similarity(skills_required, applicant.skills_tech)
+            result.append((applicant.full_name,applicant.email, applicant.skills_tech, simil))
 
         # Ordenar resultados por la similitud (de mayor a menor)
-        top_candidatos = sorted(resultados, key=lambda x: x[3], reverse=True)
+        top_applicants = sorted(result, key=lambda x: x[3], reverse=True)
 
         # Filtrar solo aquellos con alguna similitud > 0
-        top_candidatos = [res for res in top_candidatos if res[3] > 0]
-        top_candidatos = top_candidatos[:5]
-        top_candidatos_json = [
+        top_applicants = [res for res in top_applicants if res[3] > 0]
+        top_applicants = top_applicants[:5]
+        top_applicants_json = [
             {
-                'full_name': candidato[0],
-                'email': candidato[1],
-                'skills_tech': candidato[2],
-                'similitud': float(candidato[3])
+                'full_name': applicant[0],
+                'email': applicant[1],
+                'skills_tech': applicant[2],
+                'similitud': float(applicant[3])
             }
-            for candidato in top_candidatos
+            for applicant in top_applicants
         ]
-        return render_template('match-applicants.html', job_description=user_input, skills_required=skills_required,top_candidatos=top_candidatos_json)
+        return render_template('match-applicants.html', job_description=user_input, skills_required=skills_required,top_candidatos=top_applicants_json)
 
     return render_template('match-applicants-form.html', form=form)
 
