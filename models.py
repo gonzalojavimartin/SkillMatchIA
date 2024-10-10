@@ -88,3 +88,8 @@ data = {
 
 # Crear la lista de candidatos
 list_candidatos = [Candidato(data['full_name'][i], data['email'][i], data['skills_tech'][i].split(', ')) for i in range(len(data['full_name']))]
+
+def get_candidato_by_email(email):
+    for candidato in list_candidatos:
+        if candidato.email == email:
+            return candidato

@@ -24,3 +24,9 @@ class MatchingApplicantsForm(FlaskForm):
 
 class UploadCurriculumForm(FlaskForm):
     file_cv = FileField('Curriculum', validators=[DataRequired()])
+
+class SalaryPredictionForm(FlaskForm):
+    job_position = SelectField('Puesto', validators=[DataRequired()])
+    seniority = SelectField('Seniority', validators=[DataRequired()])
+    city = SelectField('Ciudad', validators=[DataRequired()])
+    gender = SelectField('Genero', validators=[DataRequired()])

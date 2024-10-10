@@ -12,7 +12,10 @@ import gensim
 import numpy as np
 import PyPDF2
 import json
+import pandas as pd
 
+from salary_prediction import get_trained_model, get_job_positions, get_seniorities, get_genders, get_cities, \
+    label_encoders
 from technologies import get_technologies
 
 app = Flask(__name__)
@@ -25,6 +28,8 @@ users.append(User(len(users) + 1, "Gonzalo Martin", "gonzalojavimartin@gmail.com
 users.append(User(len(users) + 1, "Empresa Reclutadora", "reclutamiento@empresa.com", "123", UserRol.RECRUITER))
 
 TECHNOLOGIES = get_technologies()
+
+model_salary_prediction = get_trained_model()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -180,6 +185,44 @@ def match_applicants():
         return render_template('match-applicants.html', job_description=user_input, skills_required=skills_required,top_candidatos=top_applicants_json)
 
     return render_template('match-applicants-form.html', form=form)
+
+@app.route('/salary-prediction', methods=['GET', 'POST'])
+@login_required
+def salary_prediction():
+    form = SalaryPredictionForm()
+    form.job_position.choices = [(job_position, job_position) for job_position in get_job_positions()]
+    form.seniority.choices  = [(seniority, seniority) for seniority in get_seniorities()]
+    form.gender.choices  = [(gender, gender) for gender in get_genders()]
+    form.city.choices  = [(city, city) for city in get_cities()]
+    technologies = get_candidato_by_email(current_user.email).skills_tech
+    if form.validate_on_submit():
+        # Recuperamos los datos de la sesión
+        puesto = form.job_position.data
+        tecnologias = technologies
+        seniority = form.seniority.data
+        ciudad = form.city.data
+        genero = form.gender.data
+
+        # Convertimos las respuestas del usuario en los formatos correctos usando los codificadores entrenados
+        seniority_encoded = label_encoders['seniority'].transform([seniority])[0]
+        ciudad_encoded = label_encoders['donde_estas_trabajando'].transform([ciudad])[0]
+        genero_encoded = label_encoders['me_identifico_genero'].transform([genero])[0]
+
+        # Preparar los datos para la predicción
+        user_data = np.array([[seniority_encoded, ciudad_encoded, genero_encoded]])
+        predicted_salary = model_salary_prediction.predict(user_data)[0]
+
+        prediction_result = {
+            "job_position" : puesto,
+            "seniority" : seniority,
+            "city" : ciudad,
+            "gender" : genero,
+            "technologies" : technologies,
+            "predicted_salary" : predicted_salary
+        }
+
+        return render_template('salary-prediction-result.html', prediction_result=prediction_result)
+    return render_template('salary-prediction.html', form=form,technologies=technologies)
 
 @app.route('/')
 @login_required

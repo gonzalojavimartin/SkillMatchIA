@@ -1,0 +1,45 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+    <h1 class="mt-5"><i class="bi-robot"></i> Predictor de Sueldos IT</h1>
+    <p class="lead"></p>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.job_position.label(class_="form-label") }}
+            {{ form.job_position(class_="form-control") }}
+            {% for error in form.job_position.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.seniority.label(class_="form-label") }}
+            {{ form.seniority(class_="form-control") }}
+            {% for error in form.seniority.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.city.label(class_="form-label") }}
+            {{ form.city(class_="form-control") }}
+            {% for error in form.city.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.gender.label(class_="form-label") }}
+            {{ form.gender(class_="form-control") }}
+            {% for error in form.gender.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            <label for="" class="form-label">Tecnolog&iacute;s / Lenguajes</label>
+            <input type="text" class="form-control" disabled value="{{ technologies }}">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Predecir</button>
+    </form>
+
+{% endblock %}

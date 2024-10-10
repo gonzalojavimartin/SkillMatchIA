@@ -1,0 +1,13 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+  <h1 class="mt-5"><i class="bi-robot"></i> Predictor de Sueldos IT</h1>
+
+  <p><strong>Puesto deseado:</strong> {{ prediction_result["job_position"] }}</p>
+  <p><strong>Tecnologías:</strong> {{ prediction_result["technologies"] }}</p>
+  <p><strong>Seniority:</strong> {{ prediction_result["seniority"] }}</p>
+  <p><strong>Ciudad:</strong> {{ prediction_result["city"] }}</p>
+  <p><strong>Genero:</strong> {{ prediction_result["gender"] }}</p>
+
+  <h2>Salario estimado: ${{ prediction_result["predicted_salary"] }}</h2>
+{% endblock %}
