@@ -202,7 +202,6 @@ def salary_prediction():
 
     if form.validate_on_submit():
         # Recuperamos los datos de la sesión
-        tecnologias = technologies
         job_position = form.job_position.data
         seniority = form.seniority.data
         gender = form.gender.data
@@ -210,29 +209,7 @@ def salary_prediction():
         experience = form.experience.data
 
         # Preparar los datos para la predicción
-        df_user = pd.DataFrame([{
-            "trabajo_de": job_position,
-            "dedicacion": dedication,
-            "seniority": seniority,
-            "genero": gender,
-            "rango_experiencia": experience,
-            'plataformas_sisop': 1,
-            'plataformas_container': 0,
-            'plataformas_cloud': 0,
-            'plataformas_virtualization': 1,
-            'lenguajes_dev_web_front': 1,
-            'lenguajes_dev_web_back': 1,
-            'lenguajes_dev_desktop_app': 0,
-            'lenguajes_dev_scripting': 1,
-            'framework_front': 0,
-            'framework_back': 1,
-            'framework_webmaster': 0,
-            'databases_sql': 1,
-            'databases_nosql': 1,
-            'qa_testing_api': 1,
-            'qa_testing_unit': 0,
-            'qa_testing_auto': 0
-        }])
+        df_user = setup_input_model(job_position,seniority,gender,dedication,experience,technologies)
         modelo = joblib.load('static/models/salary_prediction/salary_prediction_linear_regression.pkl')
         predicted_salary = modelo.predict(df_user)
 
@@ -260,7 +237,7 @@ glove_file = 'static/models/glove/glove.6B.100d.txt'
 
 if  os.path.isfile(glove_file):
     print("Cargando el modelo GloVe desde archivo...")
-    glove_model = ""#gensim.models.KeyedVectors.load_word2vec_format(glove_file, binary=False, no_header=True)
+    glove_model = gensim.models.KeyedVectors.load_word2vec_format(glove_file, binary=False, no_header=True)
 else:
     # Descargar los embeddings de GloVe
     print("Cargando el modelo GloVe desde gensim.downloader...")
