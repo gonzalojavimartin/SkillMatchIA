@@ -28,5 +28,6 @@ class UploadCurriculumForm(FlaskForm):
 class SalaryPredictionForm(FlaskForm):
     job_position = SelectField('Puesto', validators=[DataRequired()])
     seniority = SelectField('Seniority', validators=[DataRequired()])
-    city = SelectField('Ciudad', validators=[DataRequired()])
+    dedication = SelectField('Dedicacion', validators=[DataRequired()])
     gender = SelectField('Genero', validators=[DataRequired()])
+    experience = SelectField('Experiencia', validators=[DataRequired()])

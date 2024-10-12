@@ -1,5 +1,6 @@
 import os.path
 import gensim.downloader as api
+import joblib
 import spacy
 from flask import Flask, render_template, redirect, request, url_for, jsonify
 from werkzeug.utils import secure_filename
@@ -11,11 +12,8 @@ from werkzeug.urls import url_parse
 import gensim
 import numpy as np
 import PyPDF2
-import json
-import pandas as pd
 
-from salary_prediction import get_trained_model, get_job_positions, get_seniorities, get_genders, get_cities, \
-    label_encoders
+from salary_prediction import *
 from technologies import get_technologies
 
 app = Flask(__name__)
@@ -29,7 +27,7 @@ users.append(User(len(users) + 1, "Empresa Reclutadora", "reclutamiento@empresa.
 
 TECHNOLOGIES = get_technologies()
 
-model_salary_prediction = get_trained_model()
+model_salary_prediction = joblib.load('static/models/salary_prediction/salary_prediction_linear_regression.pkl')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -118,7 +116,7 @@ def extract_technologies(words_list):
     return [tech for tech in words_list if tech in TECHNOLOGIES]
 
 def identify_skills_tech(text):
-    nlp = spacy.load("model_upgrade_techs")
+    nlp = spacy.load("static/models/ner_techs/model_upgrade_techs")
     doc = nlp(text)
     skills = []
 
@@ -189,35 +187,62 @@ def match_applicants():
 @app.route('/salary-prediction', methods=['GET', 'POST'])
 @login_required
 def salary_prediction():
+    current_applicant = get_candidato_by_email(current_user.email)
     form = SalaryPredictionForm()
-    form.job_position.choices = [(job_position, job_position) for job_position in get_job_positions()]
-    form.seniority.choices  = [(seniority, seniority) for seniority in get_seniorities()]
-    form.gender.choices  = [(gender, gender) for gender in get_genders()]
-    form.city.choices  = [(city, city) for city in get_cities()]
-    technologies = get_candidato_by_email(current_user.email).skills_tech
+    form.job_position.choices = [(row['encoding'], row['trabajo_de']) for index, row in get_job_positions().iterrows()]
+    form.seniority.choices = [(row['encoding'], row['seniority']) for index, row in get_seniorities().iterrows()]
+    form.gender.choices = [(row['encoding'], row['genero']) for index, row in get_genders().iterrows()]
+    form.dedication.choices = [(row['encoding'], row['dedicacion']) for index, row in get_dedications().iterrows()]
+    form.experience.choices = [(row['encoding'], row['rango_experiencia']) for index, row in get_experiences().iterrows()]
+
+    if current_applicant:
+        technologies = current_applicant.skills_tech
+    else:
+        technologies = []
+
     if form.validate_on_submit():
         # Recuperamos los datos de la sesión
-        puesto = form.job_position.data
         tecnologias = technologies
+        job_position = form.job_position.data
         seniority = form.seniority.data
-        ciudad = form.city.data
-        genero = form.gender.data
-
-        # Convertimos las respuestas del usuario en los formatos correctos usando los codificadores entrenados
-        seniority_encoded = label_encoders['seniority'].transform([seniority])[0]
-        ciudad_encoded = label_encoders['donde_estas_trabajando'].transform([ciudad])[0]
-        genero_encoded = label_encoders['me_identifico_genero'].transform([genero])[0]
+        gender = form.gender.data
+        dedication = form.dedication.data
+        experience = form.experience.data
 
         # Preparar los datos para la predicción
-        user_data = np.array([[seniority_encoded, ciudad_encoded, genero_encoded]])
-        predicted_salary = model_salary_prediction.predict(user_data)[0]
+        df_user = pd.DataFrame([{
+            "trabajo_de": job_position,
+            "dedicacion": dedication,
+            "seniority": seniority,
+            "genero": gender,
+            "rango_experiencia": experience,
+            'plataformas_sisop': 1,
+            'plataformas_container': 0,
+            'plataformas_cloud': 0,
+            'plataformas_virtualization': 1,
+            'lenguajes_dev_web_front': 1,
+            'lenguajes_dev_web_back': 1,
+            'lenguajes_dev_desktop_app': 0,
+            'lenguajes_dev_scripting': 1,
+            'framework_front': 0,
+            'framework_back': 1,
+            'framework_webmaster': 0,
+            'databases_sql': 1,
+            'databases_nosql': 1,
+            'qa_testing_api': 1,
+            'qa_testing_unit': 0,
+            'qa_testing_auto': 0
+        }])
+        modelo = joblib.load('static/models/salary_prediction/salary_prediction_linear_regression.pkl')
+        predicted_salary = modelo.predict(df_user)
 
         prediction_result = {
-            "job_position" : puesto,
-            "seniority" : seniority,
-            "city" : ciudad,
-            "gender" : genero,
             "technologies" : technologies,
+            "job_position" : get_label_by_encoding("job_position",job_position),
+            "seniority" : get_label_by_encoding('seniority',seniority),
+            "dedication" : get_label_by_encoding('dedication',dedication),
+            "gender" : get_label_by_encoding('gender',gender),
+            "experience" : get_label_by_encoding('experience',experience),
             "predicted_salary" : predicted_salary
         }
 
@@ -231,11 +256,11 @@ def index():
 
 # Cargar el archivo GloVe descargado manualmente
 # Para desarrollo local descargar desde https://nlp.stanford.edu/data/glove.6B.zip
-glove_file = 'static/glove/glove.6B.100d.txt'
+glove_file = 'static/models/glove/glove.6B.100d.txt'
 
 if  os.path.isfile(glove_file):
     print("Cargando el modelo GloVe desde archivo...")
-    glove_model = gensim.models.KeyedVectors.load_word2vec_format(glove_file, binary=False, no_header=True)
+    glove_model = ""#gensim.models.KeyedVectors.load_word2vec_format(glove_file, binary=False, no_header=True)
 else:
     # Descargar los embeddings de GloVe
     print("Cargando el modelo GloVe desde gensim.downloader...")
