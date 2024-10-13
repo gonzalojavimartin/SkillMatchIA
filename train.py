@@ -62,4 +62,4 @@ with nlp.disable_pipes(*other_pipes):
         print(losses)
 
 # Guardamos el modelo entrenado para poder reutilizarlo en los siguientes pasos
-nlp.to_disk("model_upgrade_techs")
+nlp.to_disk("static/models/ner_techs/model_upgrade_techs")

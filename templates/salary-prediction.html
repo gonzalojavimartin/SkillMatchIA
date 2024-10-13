@@ -1,0 +1,58 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+    <h1 class="mt-5"><i class="bi-robot"></i> Predictor de Sueldos IT</h1>
+    <p class="lead"></p>
+    {% if technologies %}
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.job_position.label(class_="form-label") }}
+            {{ form.job_position(class_="form-control") }}
+            {% for error in form.job_position.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.seniority.label(class_="form-label") }}
+            {{ form.seniority(class_="form-control") }}
+            {% for error in form.seniority.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.dedication.label(class_="form-label") }}
+            {{ form.dedication(class_="form-control") }}
+            {% for error in form.dedication.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.gender.label(class_="form-label") }}
+            {{ form.gender(class_="form-control") }}
+            {% for error in form.gender.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.experience.label(class_="form-label") }}
+            {{ form.experience(class_="form-control") }}
+            {% for error in form.experience.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            <label for="" class="form-label">Tecnolog&iacute;s / Lenguajes</label>
+            <input type="text" class="form-control" disabled value="{{ technologies }}">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Predecir</button>
+    </form>
+    {% else %}
+        <div class="alert alert-warning">
+            Para poder predecir el salario debes registar tus habilidades subiendo tu CV en la siguiente sección para que quede asociado a tu usuario: <a class="btn btn-primary" href="/upload-cv">Adjuntar CV</a>
+        </div>
+    {% endif %}
+
+{% endblock %}
