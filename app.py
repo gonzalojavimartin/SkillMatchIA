@@ -1,5 +1,6 @@
 import os.path
 import gensim.downloader as api
+import joblib
 import spacy
 from flask import Flask, render_template, redirect, request, url_for, jsonify
 from werkzeug.utils import secure_filename
@@ -11,8 +12,8 @@ from werkzeug.urls import url_parse
 import gensim
 import numpy as np
 import PyPDF2
-import json
 
+from salary_prediction import *
 from technologies import get_technologies
 
 app = Flask(__name__)
@@ -20,11 +21,12 @@ app.config['SECRET_KEY'] = '7110c8ae51a4b5af97be6534caef90e4bb9bdcb3380af008f90b
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
-users.append(User(len(users) + 1, "SysAdmin", "admin@skillmatchia.com", "123", UserRol.ADMIN))
 users.append(User(len(users) + 1, "Gonzalo Martin", "gonzalojavimartin@gmail.com", "123", UserRol.APPLICANT))
 users.append(User(len(users) + 1, "Empresa Reclutadora", "reclutamiento@empresa.com", "123", UserRol.RECRUITER))
 
 TECHNOLOGIES = get_technologies()
+
+model_salary_prediction = joblib.load('static/models/salary_prediction/salary_prediction_linear_regression.pkl')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -95,8 +97,9 @@ def upload_cv():
         text_cv = extract_text_from_pdf(path)
         skills = identify_skills_tech(text_cv)
         os.remove(path)
-        applicant = Candidato(current_user.get_name(), current_user.email, skills)
-        list_candidatos.append(applicant)
+        applicant = get_candidato_by_email(current_user.email)
+        applicant.skills_tech = skills
+        update_cadidato_by_email(applicant)
         applicant_id = applicant.get_id()
         return redirect(url_for('applicant_resume', applicant_id=applicant_id))
     else:
@@ -113,7 +116,7 @@ def extract_technologies(words_list):
     return [tech for tech in words_list if tech in TECHNOLOGIES]
 
 def identify_skills_tech(text):
-    nlp = spacy.load("model_upgrade_techs")
+    nlp = spacy.load("static/models/ner_techs/model_upgrade_techs")
     doc = nlp(text)
     skills = []
 
@@ -181,6 +184,48 @@ def match_applicants():
 
     return render_template('match-applicants-form.html', form=form)
 
+@app.route('/salary-prediction', methods=['GET', 'POST'])
+@login_required
+def salary_prediction():
+    current_applicant = get_candidato_by_email(current_user.email)
+    form = SalaryPredictionForm()
+    form.job_position.choices = [(row['encoding'], row['trabajo_de']) for index, row in get_job_positions().iterrows()]
+    form.seniority.choices = [(row['encoding'], row['seniority']) for index, row in get_seniorities().iterrows()]
+    form.gender.choices = [(row['encoding'], row['genero']) for index, row in get_genders().iterrows()]
+    form.dedication.choices = [(row['encoding'], row['dedicacion']) for index, row in get_dedications().iterrows()]
+    form.experience.choices = [(row['encoding'], row['rango_experiencia']) for index, row in get_experiences().iterrows()]
+
+    if current_applicant:
+        technologies = current_applicant.skills_tech
+    else:
+        technologies = []
+
+    if form.validate_on_submit():
+        # Recuperamos los datos de la sesión
+        job_position = form.job_position.data
+        seniority = form.seniority.data
+        gender = form.gender.data
+        dedication = form.dedication.data
+        experience = form.experience.data
+
+        # Preparar los datos para la predicción
+        df_user = setup_input_model(job_position,seniority,gender,dedication,experience,technologies)
+        modelo = joblib.load('static/models/salary_prediction/salary_prediction_linear_regression.pkl')
+        predicted_salary = modelo.predict(df_user)
+
+        prediction_result = {
+            "technologies" : technologies,
+            "job_position" : get_label_by_encoding("job_position",job_position),
+            "seniority" : get_label_by_encoding('seniority',seniority),
+            "dedication" : get_label_by_encoding('dedication',dedication),
+            "gender" : get_label_by_encoding('gender',gender),
+            "experience" : get_label_by_encoding('experience',experience),
+            "predicted_salary" : predicted_salary
+        }
+
+        return render_template('salary-prediction-result.html', prediction_result=prediction_result)
+    return render_template('salary-prediction.html', form=form,technologies=technologies)
+
 @app.route('/')
 @login_required
 def index():
@@ -188,7 +233,7 @@ def index():
 
 # Cargar el archivo GloVe descargado manualmente
 # Para desarrollo local descargar desde https://nlp.stanford.edu/data/glove.6B.zip
-glove_file = 'static/glove/glove.6B.100d.txt'
+glove_file = 'static/models/glove/glove.6B.100d.txt'
 
 if  os.path.isfile(glove_file):
     print("Cargando el modelo GloVe desde archivo...")

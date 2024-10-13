@@ -88,3 +88,15 @@ data = {
 
 # Crear la lista de candidatos
 list_candidatos = [Candidato(data['full_name'][i], data['email'][i], data['skills_tech'][i].split(', ')) for i in range(len(data['full_name']))]
+list_candidatos.append(Candidato('Gonzalo Martin','gonzalojavimartin@gmail.com',['PHP','SQL','Bootstrap']))
+
+def get_candidato_by_email(email):
+    for candidato in list_candidatos:
+        if candidato.email == email:
+            return candidato
+
+def update_cadidato_by_email(applicant):
+    for candidato in list_candidatos:
+        if candidato.email == applicant.email:
+            candidato.skills_tech = applicant.skills_tech
+            break
