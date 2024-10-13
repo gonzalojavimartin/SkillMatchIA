@@ -26,7 +26,7 @@ login_manager.login_view = "login"
 glove_file = 'static/models/glove/glove.6B.100d.txt'
 if os.path.isfile(glove_file):
     print("Cargando el modelo GloVe desde archivo...")
-    glove_model = ""#gensim.models.KeyedVectors.load_word2vec_format(glove_file, binary=False, no_header=True)
+    glove_model = gensim.models.KeyedVectors.load_word2vec_format(glove_file, binary=False, no_header=True)
 else:
     # Descargar los embeddings de GloVe
     print("Cargando el modelo GloVe desde gensim.downloader...")
