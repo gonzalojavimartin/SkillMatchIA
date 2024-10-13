@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileRequired, FileAllowed
 from wtforms import StringField, SubmitField, PasswordField
 from wtforms.fields.choices import SelectField
 from wtforms.fields.simple import TextAreaField, FileField
@@ -23,7 +24,7 @@ class MatchingApplicantsForm(FlaskForm):
     job_description = TextAreaField('Descripcion de puesto', validators=[DataRequired()])
 
 class UploadCurriculumForm(FlaskForm):
-    file_cv = FileField('Curriculum', validators=[DataRequired()])
+    file_cv = FileField('Curriculum', validators=[DataRequired(), FileRequired(), FileAllowed(['pdf'])])
 
 class SalaryPredictionForm(FlaskForm):
     job_position = SelectField('Puesto', validators=[DataRequired()])
