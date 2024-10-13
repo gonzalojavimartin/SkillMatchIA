@@ -20,7 +20,7 @@ class SignupForm(FlaskForm):
     submit = SubmitField('Registrar')
 
 class MatchingApplicantsForm(FlaskForm):
-    job_description = TextAreaField('job_description', validators=[DataRequired()])
+    job_description = TextAreaField('Descripcion de puesto', validators=[DataRequired()])
 
 class UploadCurriculumForm(FlaskForm):
     file_cv = FileField('Curriculum', validators=[DataRequired()])

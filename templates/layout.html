@@ -111,12 +111,6 @@
                         Home
                     </a>
                   </li>
-                  <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="/salary-prediction">
-                        <i class="bi-currency-dollar"></i>&nbsp;
-                        Predecir Salario
-                    </a>
-                  </li>
                     {% if current_user.is_recruiter() %}
                     <li class="nav-item">
                         <a class="nav-link" href="/match-applicants">
@@ -132,6 +126,12 @@
                             Adjuntar CV
                         </a>
                       </li>
+                  <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="/salary-prediction">
+                        <i class="bi-currency-dollar"></i>&nbsp;
+                        Predecir Salario
+                    </a>
+                  </li>
                     {% endif %}
                 </ul>
                 <div class="d-flex" role="search">

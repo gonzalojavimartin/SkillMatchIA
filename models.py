@@ -94,3 +94,9 @@ def get_candidato_by_email(email):
     for candidato in list_candidatos:
         if candidato.email == email:
             return candidato
+
+def update_cadidato_by_email(applicant):
+    for candidato in list_candidatos:
+        if candidato.email == applicant.email:
+            candidato.skills_tech = applicant.skills_tech
+            break

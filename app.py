@@ -21,7 +21,6 @@ app.config['SECRET_KEY'] = '7110c8ae51a4b5af97be6534caef90e4bb9bdcb3380af008f90b
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
-users.append(User(len(users) + 1, "SysAdmin", "admin@skillmatchia.com", "123", UserRol.ADMIN))
 users.append(User(len(users) + 1, "Gonzalo Martin", "gonzalojavimartin@gmail.com", "123", UserRol.APPLICANT))
 users.append(User(len(users) + 1, "Empresa Reclutadora", "reclutamiento@empresa.com", "123", UserRol.RECRUITER))
 
@@ -98,8 +97,9 @@ def upload_cv():
         text_cv = extract_text_from_pdf(path)
         skills = identify_skills_tech(text_cv)
         os.remove(path)
-        applicant = Candidato(current_user.get_name(), current_user.email, skills)
-        list_candidatos.append(applicant)
+        applicant = get_candidato_by_email(current_user.email)
+        applicant.skills_tech = skills
+        update_cadidato_by_email(applicant)
         applicant_id = applicant.get_id()
         return redirect(url_for('applicant_resume', applicant_id=applicant_id))
     else:
