@@ -39,6 +39,12 @@ train_data = [
     ("Experienced system administrator knowledgeable in Linux, Windows Server, and networking.", {"entities": [(50, 55, "TECH"), (57, 71, "TECH"), (77, 87, "TECH")]}),
 ]
 
+
+train_data = [
+    (descripcion.lower(), entidades)  # Aplicamos lower() a la descripción
+    for descripcion, entidades in train_data
+]
+
 # Solo se entrena el componente ner para acelerar el proceso
 other_pipes = [pipe for pipe in nlp.pipe_names if pipe != 'ner']
 # Deshabilitando temporalmente el resto del pipeline (como el análisis sintáctico y el etiquetado POS)

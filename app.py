@@ -21,12 +21,19 @@ app.config['SECRET_KEY'] = '7110c8ae51a4b5af97be6534caef90e4bb9bdcb3380af008f90b
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
-users.append(User(len(users) + 1, "Gonzalo Martin", "gonzalojavimartin@gmail.com", "123", UserRol.APPLICANT))
-users.append(User(len(users) + 1, "Empresa Reclutadora", "reclutamiento@empresa.com", "123", UserRol.RECRUITER))
+# Cargar el archivo GloVe descargado manualmente
+# Para desarrollo local descargar desde https://nlp.stanford.edu/data/glove.6B.zip
+glove_file = 'static/models/glove/glove.6B.100d.txt'
 
-TECHNOLOGIES = get_technologies()
+if os.path.isfile(glove_file):
+    print("Cargando el modelo GloVe desde archivo...")
+    glove_model = gensim.models.KeyedVectors.load_word2vec_format(glove_file, binary=False, no_header=True)
+else:
+    # Descargar los embeddings de GloVe
+    print("Cargando el modelo GloVe desde gensim.downloader...")
+    glove_model = api.load("glove-wiki-gigaword-100")
 
-model_salary_prediction = joblib.load('static/models/salary_prediction/salary_prediction_linear_regression.pkl')
+print("Modelo GloVe cargado.")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -113,16 +120,17 @@ def applicant_resume(applicant_id):
             return render_template('applicant-resume.html', applicant=applicant)
 
 def extract_technologies(words_list):
-    return [tech for tech in words_list if tech in TECHNOLOGIES]
+    return [tech for tech in words_list if tech in get_technologies()]
 
 def identify_skills_tech(text):
+    text = text.lower()
     nlp = spacy.load("static/models/ner_techs/model_upgrade_techs")
     doc = nlp(text)
     skills = []
 
     for ent in doc.ents:
         if ent.label_ in ["ORG", "TECHNOLOGY", "TECH"]:
-            skills.append(ent.text)
+            skills.append(ent.text.lower())
 
     found_technologies = extract_technologies(skills)
 
@@ -230,20 +238,6 @@ def salary_prediction():
 @login_required
 def index():
     return render_template('index.html')
-
-# Cargar el archivo GloVe descargado manualmente
-# Para desarrollo local descargar desde https://nlp.stanford.edu/data/glove.6B.zip
-glove_file = 'static/models/glove/glove.6B.100d.txt'
-
-if  os.path.isfile(glove_file):
-    print("Cargando el modelo GloVe desde archivo...")
-    glove_model = gensim.models.KeyedVectors.load_word2vec_format(glove_file, binary=False, no_header=True)
-else:
-    # Descargar los embeddings de GloVe
-    print("Cargando el modelo GloVe desde gensim.downloader...")
-    glove_model = api.load("glove-wiki-gigaword-100")
-
-print("Modelo GloVe cargado.")
 
 if __name__ == '__main__':
     app.run(debug=True)
