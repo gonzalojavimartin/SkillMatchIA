@@ -162,7 +162,7 @@ cython_debug/
 .idea/*
 .DS_STORE
 static/models/glove/glove.6B.100d.txt
-/uploads/*
-/concept_test/*
+uploads/*
+concept_test/*
 # Except this file
 !.gitkeep
