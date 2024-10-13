@@ -2,7 +2,7 @@
 
 {% block content %}
 
-    <h1 class="mt-5">Registrar CV</h1>
+    <h1 class="mt-5"><i class="bi bi-file-earmark-arrow-up"></i> Adjuntar CV</h1>
     <p class="lead">
     Descubre tu próximo gran desafío profesional con nuestra plataforma inteligente. Analizamos tus habilidades y te conectamos con las mejores oportunidades laborales en tecnología. ¡Haz match con empresas que valoran tu talento y da el siguiente paso en tu carrera!
     </p>
@@ -17,5 +17,6 @@
         </div>
         <button type="submit" class="btn btn-primary">Adjuntar CV</button>
     </form>
-
+    <hr>
+    <p><small><i>Datos actuales: {{ current_applicant['full_name'] }} / <i class="bi bi-envelope"></i> {{ current_applicant['email'] }} / <i class="bi bi-journal-code"></i> Habilidades: {{ current_applicant['skills_tech'] }}</i></small></p>
 {% endblock %}

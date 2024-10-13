@@ -24,15 +24,13 @@ login_manager.login_view = "login"
 # Cargar el archivo GloVe descargado manualmente
 # Para desarrollo local descargar desde https://nlp.stanford.edu/data/glove.6B.zip
 glove_file = 'static/models/glove/glove.6B.100d.txt'
-
 if os.path.isfile(glove_file):
     print("Cargando el modelo GloVe desde archivo...")
-    glove_model = gensim.models.KeyedVectors.load_word2vec_format(glove_file, binary=False, no_header=True)
+    glove_model = ""#gensim.models.KeyedVectors.load_word2vec_format(glove_file, binary=False, no_header=True)
 else:
     # Descargar los embeddings de GloVe
     print("Cargando el modelo GloVe desde gensim.downloader...")
     glove_model = api.load("glove-wiki-gigaword-100")
-
 print("Modelo GloVe cargado.")
 
 @login_manager.user_loader
@@ -96,6 +94,7 @@ def extract_text_from_pdf(pdf_path):
 @app.route('/upload-cv', methods=['GET', 'POST'])
 @login_required
 def upload_cv():
+    current_applicant = get_candidato_by_email(current_user.email)
     form = UploadCurriculumForm()
     if form.validate_on_submit():
         filename = secure_filename(form.file_cv.data.filename)
@@ -110,7 +109,7 @@ def upload_cv():
         applicant_id = applicant.get_id()
         return redirect(url_for('applicant_resume', applicant_id=applicant_id))
     else:
-        return render_template('upload-cv.html', form=form)
+        return render_template('upload-cv.html', form=form,current_applicant=current_applicant)
 
 @app.route('/applicant-resume/<applicant_id>')
 @login_required

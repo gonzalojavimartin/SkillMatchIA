@@ -1,9 +1,17 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-    <h1 class="mt-5">Resumen del Candidato / CV</h1>
-    <h2>ID: {{ applicant["id"] }}</h2>
-    <h2>Nombre completo: {{ applicant["full_name"] }}</h2>
-    <h2>Email: {{ applicant["email"] }}</h2>
-    <h3>Skills: {{ applicant["skills_tech"] }}</h3>
+    <h1 class="mt-5"><i class="bi bi-person-vcard"></i> Datos Candidato</h1>
+    <div class="col-md-6">
+        <div class="list-group">
+            <div class="list-group-item list-group-item-action">
+                <div class="d-flex justify-content-between">
+                    <h2 class="mb-1">{{ applicant['full_name'] }}</h2>
+                </div>
+                <small>{{ applicant['id'] }}</small>
+                <p class="lead"><i class="bi-envelope"></i> {{ applicant['email'] }}</p>
+                <p class="lead"><i class="bi-journal-code"></i> Habilidades: {{ applicant['skills_tech'] }}</p>
+            </div>
+        </div>
+    </div>
 {% endblock %}
