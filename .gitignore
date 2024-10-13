@@ -163,6 +163,6 @@ cython_debug/
 .DS_STORE
 static/models/glove/glove.6B.100d.txt
 /uploads/*
-
+/concept_test/*
 # Except this file
 !.gitkeep
